@@ -16,15 +16,15 @@ class Usuario:
         contraseña = input("Ingresar contraseña: ")
         user_database[usuario] = contraseña
         
-    def login(self):
+    def login(self, usuario, contraseña):
         usuario = input("Ingresar nombre de usuario: ").strip()
         contraseña = input("Ingresar contraseña: ")
         if usuario in user_database:
             if user_database[usuario] == contraseña:
-                print("Logueado")
+                return ("usuario", usuario) 
         elif usuario in admin_database:
             if admin_database[usuario] == contraseña:
-                print("Logueado como admin")
+                return ("admin", usuario) 
         else:
             print("Error")
         
