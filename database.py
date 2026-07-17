@@ -34,7 +34,32 @@ admin_database = {
 
 # Lista de médicos
 medic_database = [
-    
+    {
+        "Nombre": "Elena Rostova",
+        "Especialidad": "Pediatría Clínico",
+        "Dias": ["Monday", "Wednesday", "Friday"],
+        "Horarios": [(8, 13)]
+    }, {
+        "Nombre": "Carlos Mendoza",
+        "Especialidad": "Cardiología Adultos",
+        "Dias": ["Tuesday", "Thursday"],
+        "Horarios": [(14, 19.50)]
+    }, {
+        "Nombre": "Amira Said",
+        "Especialidad": "Dermatología Médica y Estética",
+        "Dias": ["Monday", "Thursday"],
+        "Horarios": [(10, 16)]
+    }, {
+        "Nombre": "Mateo Silva",
+        "Especialidad": "Traumatología y Ortopedia",
+        "Dias": ["Wednesday", "Friday"],
+        "Horarios": [(15, 20)]
+    }, {
+        "Nombre": "Sofía Chevalier",
+        "Especialidad": "Ginecología y Obstetricia",
+        "Dias": ["Tuesday", "Friday"],
+        "Horarios": [(9, 14.50)]
+    }
 ]
 
 # Lista de turnos
