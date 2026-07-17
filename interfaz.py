@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from main import Usuario, Administrador 
-from database import medic_database
+from main import Usuario, Administrador, Main
 
 class Interfaz:
     def __init__(self, principal):
@@ -10,7 +9,7 @@ class Interfaz:
         self.usuario = Usuario()
         self.admin = Administrador()
 
-        #notebook es una funcion para crear pestañas en la misma pagina
+        # notebook es una funcion para crear pestañas en la misma pagina
         self.notebook = ttk.Notebook(principal)
         self.notebook.pack(expand=True, fill="both")
 
@@ -20,12 +19,11 @@ class Interfaz:
         self.notebook.add(frame_inicio, text="Inicio")
 
         # Botones para crear pestañas
-        self.btn_login = tk.Button(frame_inicio, text="Login", width=20, command=self.crear_login)
+        self.btn_login = tk.Button(frame_inicio, text="Iniciar sesión", width=20, command=self.crear_login)
         self.btn_login.pack(pady=5)
 
-        self.btn_register = tk.Button(frame_inicio, text="Register", width=20, command=self.crear_register)
+        self.btn_register = tk.Button(frame_inicio, text="Registrarse", width=20, command=self.crear_register)
         self.btn_register.pack(pady=5)
-
 
         # Variables de control (para que solo exista una pestaña de cada tipo)
         self.login_ventana = None
@@ -51,6 +49,7 @@ class Interfaz:
             try:
                 rol, nombre = self.usuario.login(usuario, contraseña)
                 messagebox.showinfo("Éxito", f"Bienvenido {nombre} ({rol})")
+                self.cerrar_login()
                 self.mostrar_panel_usuario(rol, nombre)
             except Exception as e:
                 messagebox.showerror("Error hubo un problema", str(e))
@@ -67,16 +66,15 @@ class Interfaz:
             self.login_ventana.destroy()
             self.login_ventana = None
 
-    
     def mostrar_panel_usuario(self, rol, nombre):
         panel = tk.Frame(self.notebook)
         tk.Label(panel, text=f"Usuario: {nombre}").pack(pady=10)
 
-        if rol == "usuario":
+        if rol == "Usuario":
             tk.Label(panel, text="Opciones disponibles:").pack()
             tk.Button(panel, text="Ver Médicos", command=self.disponibilidad_medicos).pack(pady=5)
             tk.Button(panel, text="Solicitar Turno", command=self.solicitar_turno).pack(pady=5)
-        elif rol == "admin":
+        elif rol == "Admin":
             tk.Label(panel, text="Opciones de administrador:").pack()
             tk.Button(panel, text="Agregar Médico", command=self.agregar_medico).pack(pady=5)
             tk.Button(panel, text="Modificar Médico", command=self.modificar_medico).pack(pady=5)
@@ -106,13 +104,13 @@ class Interfaz:
         entry_contraseña = tk.Entry(self.register_ventana, show="*")
         entry_contraseña.pack(pady=5)
 
-
         def ejecutar_register():
             usuario = entry_usuario.get().strip()
             contraseña = entry_contraseña.get()
             try:
                 resultado = self.usuario.registrar(usuario, contraseña)
                 messagebox.showinfo("Éxito", resultado)
+                self.cerrar_register()
             except Exception as e:
                 messagebox.showerror("Error hubo un problema", str(e))
 
@@ -127,6 +125,8 @@ class Interfaz:
             self.notebook.forget(self.register_ventana)
             self.register_ventana.destroy()
             self.register_ventana = None
+            
+    # Todo debería funcionar de aca para arriba, menos las funcionalidades de los botones de mostrar_panel_usuario.
 
     def agregar_medico(self):
         top = tk.Toplevel(self.principal); top.title("Agregar Médico")
@@ -161,6 +161,9 @@ class Interfaz:
         pass
 
 if __name__ == "__main__":
+    main = Main()
+    main.cargar_medicos()
     principal = tk.Tk()
+    principal.geometry("800x800")
     app = Interfaz(principal)
     principal.mainloop()

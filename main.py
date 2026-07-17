@@ -3,30 +3,50 @@ from database import user_database, admin_database, medic_database
 import getpass
 from datetime import date
 
+class Main:
+    def __init__(self):
+        pass
+    
+    # Carga como instancias de la clase Medico a los datos precargados en database
+    def cargar_medicos(self):
+        global medic_database
+        
+        if medic_database and isinstance(medic_database[0], Medico):
+            return
+        
+        medic_database = [
+            Medico(
+                i["Nombre"],
+                i["Especialidad"],
+                i["Dias"],
+                i["Horarios"]
+            )
+            for i in medic_database
+        ]
+        print(medic_database)
 #Clase Usuario
 class Usuario:
     def __init__(self):
         pass
     
-    def registrar(self):
-        usuario = input("Ingresar nombre de usuario: ").strip()
+    def registrar(self, usuario, contraseña):
+        if len(usuario) < 6:
+            raise Exception("El nombre de usuario debe contener al menos 6 carácteres.")
+        if len(contraseña) < 5:
+            raise Exception("La contraseña debe contener al menos 5 carácteres.")
         if usuario in user_database or usuario in admin_database:
             raise Exception("El usuario ya existe.")
-            return
-        contraseña = input("Ingresar contraseña: ")
         user_database[usuario] = contraseña
+        return ("Usuario registrado correctamente.")
         
     def login(self, usuario, contraseña):
-        usuario = input("Ingresar nombre de usuario: ").strip()
-        contraseña = input("Ingresar contraseña: ")
         if usuario in user_database:
             if user_database[usuario] == contraseña:
-                return ("usuario", usuario) 
+                return ("Usuario", usuario) 
         elif usuario in admin_database:
             if admin_database[usuario] == contraseña:
-                return ("admin", usuario) 
-        else:
-            print("Error")
+                return ("Admin", usuario) 
+        raise Exception("El usuario o la contraseña son incorrectos.")
         
 
 #Clase Administrador
@@ -39,11 +59,11 @@ class Administrador:
         
     def buscar_medico(self, nombre):
         contador = 0
-        for i in medic_database:
-            if i.get_nombre() == nombre:
-                return contador
-            else:
-                contador += 1
+        #for i in medic_database:
+            #if i.get_nombre() == nombre:
+                #return contador
+            #else:
+                #contador += 1
     
     def modificar_medico(self, indice_medico, nombre, esp, dias, hor):
         medic_database[indice_medico].set_nombre(nombre)
@@ -79,7 +99,7 @@ class Paciente:
             raise Exception("Horario no disponible")
         else:
             raise Exception("Este día no esta disponible.")
-        #Chequear si ya existe un turno con este horario y fecha.
+        # Chequear si ya existe un turno con este horario y fecha.
         
 #Clase Médico
 class Medico:
@@ -145,28 +165,11 @@ class Turno:
     def set_horario(self, nuevo_hor):
         self.__horario = nuevo_hor
 
-#usuario1 = Usuario()
-#usuario1.registrar()
-#usuario1.login()
-
-admin1 = Administrador()
-admin1.añadir_medico("Manuel", "Pediatra", ["Monday", "Tuesday", "Friday"], [(13, 18), (19, 23)])
-admin1.añadir_medico("Pedro", "Pediatra", ["Monday", "Tuesday", "Friday"], [(13, 18), (19, 23)])
-admin1.añadir_medico("Juan", "Pediatra", ["Monday", "Tuesday", "Friday"], [(13, 18), (19, 23)])
-indice_medico1 = admin1.buscar_medico("Pedro")
-admin1.modificar_medico(indice_medico1, "Paula", "Nose", ["Wednesday", "Thursday", "Friday"], [(11, 15), (17, 22)])
-#admin1.eliminar_medico(0)
-
-paciente1 = Paciente()
-#lista_medicos = paciente1.buscar_medico("Pediatra")
-#for i in lista_medicos:
-    #print(i.get_nombre(), i.get_especialidad(), i.get_dias_atencion(), i.get_horarios())
-#print(paciente1.ver_disponibilidad(medic_database[indice_medico1]))
-turno1 = paciente1.solicitar_turno(medic_database[indice_medico1], date(2026, 7, 8), 17)
-print(turno1.get_paciente(), turno1.get_medico().get_nombre(), turno1.get_fecha(), turno1.get_horario())
-
-#medico1 = Medico("Manuel", "Pediatra", ["Lunes", "Martes", "Viernes"], [(13, 18), (19, 23)])
-#medic_database.append(medico1)
-
-#for i in medic_database:
-    #print(i.get_nombre(), i.get_especialidad(), i.get_dias_atencion(), i.get_horarios())
+# Convertir decimales a tiempo (19.50 a 19:30)
+def decimal_a_tiempo(self, horas_decimal):
+        horas = int(horas_decimal)
+        minutos = int(round((horas_decimal - horas) * 60))
+        return horas, minutos
+    
+main = Main()
+#main.cargar_medicos()
