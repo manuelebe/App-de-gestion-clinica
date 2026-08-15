@@ -231,7 +231,7 @@ class Interfaz:
         content_frame.pack_propagate(False)  # evita que se expanda más allá del tamaño fijo
 
         # --- Contenido ---
-        titulo = tk.Label(content_frame, text="Registresé",
+        titulo = tk.Label(content_frame, text="Registro",
                          font=("Segoe UI", 16, "bold"), fg="#004080", bg="#F8FBFF")
         titulo.pack(pady=(15, 5))
 
