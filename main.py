@@ -24,6 +24,7 @@ class Main:
             for i in medic_database
         ]
         print(medic_database)
+        
 #Clase Usuario
 class Usuario:
     def __init__(self):
