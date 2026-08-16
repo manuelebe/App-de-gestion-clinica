@@ -36,27 +36,27 @@ admin_database = {
 medic_database = [
     {
         "Nombre": "Elena Rostova",
-        "Especialidad": "Pediatría Clínico",
+        "Especialidad": "Pediatría clínico",
         "Dias": ["Monday", "Wednesday", "Friday"],
         "Horarios": [(8, 13)]
     }, {
         "Nombre": "Carlos Mendoza",
-        "Especialidad": "Cardiología Adultos",
+        "Especialidad": "Cardiología adultos",
         "Dias": ["Tuesday", "Thursday"],
         "Horarios": [(14, 19.50)]
     }, {
         "Nombre": "Amira Said",
-        "Especialidad": "Dermatología Médica y Estética",
+        "Especialidad": "Dermatología médica y estética",
         "Dias": ["Monday", "Thursday"],
         "Horarios": [(10, 16)]
     }, {
         "Nombre": "Mateo Silva",
-        "Especialidad": "Traumatología y Ortopedia",
+        "Especialidad": "Traumatología y ortopedia",
         "Dias": ["Wednesday", "Friday"],
         "Horarios": [(15, 20)]
     }, {
         "Nombre": "Sofía Chevalier",
-        "Especialidad": "Ginecología y Obstetricia",
+        "Especialidad": "Ginecología y obstetricia",
         "Dias": ["Tuesday", "Friday"],
         "Horarios": [(9, 14.50)]
     }

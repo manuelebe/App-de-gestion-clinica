@@ -87,6 +87,12 @@ class Paciente:
                 medicos_encontrados.append(i)
         return medicos_encontrados
     
+    def retornar_medicos(self):
+        medicos = []
+        for medico in medic_database:
+            medicos.append(medico)
+        return medicos
+    
     def ver_disponibilidad(self, medico):
         return medico.get_dias_atencion(), medico.get_horarios()
     
@@ -167,10 +173,10 @@ class Turno:
         self.__horario = nuevo_hor
 
 # Convertir decimales a tiempo (19.50 a 19:30)
-def decimal_a_tiempo(self, horas_decimal):
-        horas = int(horas_decimal)
-        minutos = int(round((horas_decimal - horas) * 60))
-        return horas, minutos
+def decimal_a_tiempo(horas_decimal):
+    horas = int(horas_decimal)
+    minutos = int(round((horas_decimal - horas) * 60))
+    return horas, minutos
     
 main = Main()
 #main.cargar_medicos()

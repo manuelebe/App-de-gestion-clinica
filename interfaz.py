@@ -1,12 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from main import Usuario, Administrador, Main
+from main import Usuario, Paciente, Administrador, Main, decimal_a_tiempo
 
 class Interfaz:
     def __init__(self, principal):
         self.principal = principal
         self.principal.title("Clínica")
         self.usuario = Usuario()
+        self.paciente = Paciente()
         self.admin = Administrador()
 
         # notebook es una funcion para crear pestañas en la misma pagina
@@ -36,17 +37,17 @@ class Interfaz:
         title.pack(pady=(20, 10))
 
         subtitle = tk.Label(content_frame, text="Gestione sus turnos y su historial médico fácilmente",
-                            font=("Roboto", 12), bg="#E6F2F8", fg="#333333")
+        font=("Roboto", 12), bg="#E6F2F8", fg="#333333")
         subtitle.pack(pady=(0, 20))
         
         # Botones para crear pestañas
         self.btn_login = tk.Button(content_frame, text="🔑 Iniciar sesión", font=("Roboto", 12, "bold"),
-                      bg="#007ACC", fg="white", width=20, relief="flat", cursor="hand2", command=self.crear_login)
+        bg="#007ACC", fg="white", width=20, relief="flat", cursor="hand2", command=self.crear_login)
         self.btn_login.pack(pady=10)
         
 
         self.btn_register = tk.Button(content_frame,text="🩺 Registrarse", font=("Roboto", 12, "bold"),
-                         bg="#00A86B", fg="white", width=20, relief="flat", cursor="hand2", command=self.crear_register)
+        bg="#00A86B", fg="white", width=20, relief="flat", cursor="hand2", command=self.crear_register)
         self.btn_register.pack(pady=10) 
 
         
@@ -71,13 +72,14 @@ class Interfaz:
 
         # --- footer---
         footer = tk.Label(frame_inicio, text="Tu salud, nuestra prioridad", font=("Roboto", 10, "italic"),
-                          bg="#E6F2F8", fg="#555555")
+        bg="#E6F2F8", fg="#555555")
         footer.pack(side="bottom", pady=10)
         
 
         # Variables de control (para que solo exista una pestaña de cada tipo)
         self.login_ventana = None
         self.register_ventana = None
+        self.medicos_ventana = None
 
     def crear_login(self):
         if self.login_ventana is not None:
@@ -103,11 +105,11 @@ class Interfaz:
 
         # --- Contenido dentro del frame limitado ---
         titulo = tk.Label(content_frame, text="Iniciar Sesión",
-                         font=("Segoe UI", 16, "bold"), fg="#004080", bg="white")
+        font=("Segoe UI", 16, "bold"), fg="#004080", bg="white")
         titulo.pack(pady=(15, 5))
 
         subtitulo = tk.Label(content_frame,text="Acceda a su cuenta para gestionar turnos y su historial médico", 
-                             font=("Segoe UI", 9), fg="#555", bg="white", wraplength=350, justify="center")
+        font=("Segoe UI", 9), fg="#555", bg="white", wraplength=350, justify="center")
         subtitulo.pack(pady=(0, 10))
         
         # Usuario
@@ -132,17 +134,17 @@ class Interfaz:
                 messagebox.showerror("Error", str(e))
 
         register = tk.Label(content_frame, text="¿Aún no tienes cuenta?",
-                                font=("Segoe UI", 9, "underline"), fg="#28a745",
-                                bg="white", cursor="hand2")
+        font=("Segoe UI", 9, "underline"), fg="#28a745",
+        bg="white", cursor="hand2")
         register.pack()
         register.bind("<Button-1>", lambda e: self.crear_register()) #Funcion encargada de si se realiza algun click en el label "¿Aún no tienes cuenta?", llama a la funcion crear_register
         
         tk.Button(content_frame, text="Iniciar sesión", bg="#007BFF", fg="white", font=("Segoe UI", 10, "bold"), 
-                  relief="flat", command=ejecutar_login).pack(pady=(25, 0), fill="x", padx=20)
+        relief="flat", command=ejecutar_login).pack(pady=(25, 0), fill="x", padx=20)
         
 
         tk.Button(content_frame, text="❌ Cerrar pestaña", bg="#BE0606", fg="white", 
-                  font=("Segoe UI", 10, "bold"), relief="flat", command=self.cerrar_login).pack(pady=(10), fill="x", padx=20)
+        font=("Segoe UI", 10, "bold"), relief="flat", command=self.cerrar_login).pack(pady=(10), fill="x", padx=20)
 
         self.notebook.add(self.login_ventana, text="Login")
         self.notebook.select(self.login_ventana)
@@ -168,7 +170,7 @@ class Interfaz:
 
         
         tk.Label(panel_user, text=f"👤 Usuario: {nombre}",
-                 font=("Arial", 14, "bold"), bg="#E6F2F8", fg="#2c3e50").pack(pady=10)
+        font=("Arial", 14, "bold"), bg="#E6F2F8", fg="#2c3e50").pack(pady=10)
 
         # Linea 
         ttk.Separator(panel_user, orient="horizontal").pack(fill="x", padx=20, pady=5)
@@ -178,22 +180,22 @@ class Interfaz:
             tk.Label(panel_user, text="Opciones disponibles:", font=("Arial", 13, "italic"), bg="#E6F2F8").pack(pady=5)
 
             tk.Button(panel_user, text="🩺 Ver Médicos", command=self.disponibilidad_medicos,
-                      bg="#42A5F5", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
+            bg="#42A5F5", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
 
             tk.Button(panel_user, text="📅 Solicitar Turno", command=self.solicitar_turno,
-                      bg="#66BB6A", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
+            bg="#66BB6A", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
 
         elif rol == "Admin":
             tk.Label(panel_user, text="⚙️ Opciones de administrador:", font=("Arial", 12, "italic"), bg="#E6F2F8").pack(pady=5)
 
             tk.Button(panel_user, text="➕ Agregar Médico", command=self.agregar_medico,
-                      bg="#4CAF50", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
+            bg="#4CAF50", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
 
             tk.Button(panel_user, text="✏️ Modificar Médico", command=self.modificar_medico,
-                      bg="#F58C46", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
+            bg="#F58C46", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
 
             tk.Button(panel_user, text="🗑️ Eliminar Médico", command=self.eliminar_medico,
-                      bg="#E53935", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
+            bg="#E53935", fg="white", relief="raised", width=25, font=("Segoe UI", 10, "bold")).pack(pady=5)
 
         # Linea 
         ttk.Separator(panel_user, orient="horizontal").pack(fill="x", padx=20, pady=10)
@@ -232,12 +234,12 @@ class Interfaz:
 
         # --- Contenido ---
         titulo = tk.Label(content_frame, text="Registro",
-                         font=("Segoe UI", 16, "bold"), fg="#004080", bg="#F8FBFF")
+        font=("Segoe UI", 16, "bold"), fg="#004080", bg="#F8FBFF")
         titulo.pack(pady=(15, 5))
 
         subtitulo = tk.Label(content_frame,
-                            text="Cree su cuenta para gestionar turnos y su historial médico",
-                            font=("Segoe UI", 9), fg="#555", bg="#F8FBFF", wraplength=350, justify="center")
+        text="Cree su cuenta para gestionar turnos y su historial médico",
+        font=("Segoe UI", 9), fg="#555", bg="#F8FBFF", wraplength=350, justify="center")
         subtitulo.pack(pady=(0, 5))
 
         # Usuario
@@ -272,10 +274,10 @@ class Interfaz:
 
         # Botones más abajo para mejor distribución
         tk.Button(content_frame, text="Registrarse", bg="#00A86B", fg="white", font=("Segoe UI", 10, "bold"), 
-                  relief="flat", command=ejecutar_register).pack(pady=(20, 0), fill="x", padx=20)
+        relief="flat", command=ejecutar_register).pack(pady=(20, 0), fill="x", padx=20)
 
         tk.Button(content_frame, text="❌ Cerrar pestaña", bg="#BE0606", fg="white", font=("Segoe UI", 10, "bold"), 
-                  relief="flat", command=self.cerrar_register).pack(pady=(10), fill="x", padx=20)
+        relief="flat", command=self.cerrar_register).pack(pady=(10), fill="x", padx=20)
 
         # Agregar al notebook
         self.notebook.add(self.register_ventana, text="Register")
@@ -286,8 +288,6 @@ class Interfaz:
             self.notebook.forget(self.register_ventana)
             self.register_ventana.destroy()
             self.register_ventana = None
-            
-    # Todo debería funcionar de aca para arriba, menos las funcionalidades de los botones de mostrar_panel_usuario.
 
     def agregar_medico(self):
         top = tk.Toplevel(self.principal)
@@ -325,7 +325,7 @@ class Interfaz:
             except Exception as e:
                 messagebox.showerror("Error", str(e))
 
-         # Botón Guardar
+        # Botón Guardar
         btn_guardar = tk.Button(top, text="Guardar", width=15, bg="#4CAF50", fg="white", command=guardar)
         btn_guardar.grid(row=4, column=1, columnspan=2, pady=25)
 
@@ -336,7 +336,60 @@ class Interfaz:
         pass
 
     def disponibilidad_medicos(self): 
-        pass 
+        if self.medicos_ventana is not None:
+            messagebox.showwarning("Aviso", "Ya existe la pestaña de Médicos. Ciérrala primero.")
+            return
+        
+        # Pestaña principal
+        self.medicos_ventana = tk.Frame(self.notebook, bg="#E6F2F8")
+        
+        header_frame = tk.Frame(self.medicos_ventana, bg="#E6F2F8")
+        header_frame.pack(fill="x")
+        
+        logo = tk.Label(header_frame, text="➕ Clínica", font=("Roboto", 16, "bold"), bg="#E6F2F8", fg="#004466")
+        logo.pack(side="left", padx=20)
+        
+        menu = tk.Label(header_frame, text="Médicos disponibles", font=("Roboto", 12), bg="#E6F2F8", fg="#004466")
+        menu.pack(side="right", padx=20)
+        
+        # Linea 
+        ttk.Separator(self.medicos_ventana, orient="horizontal").pack(fill="x", padx=20, pady=5)
+        
+        # Lista de items
+        columnas = ("item_nombre", "item_esp", "item_dias", "item_horarios")
+        tree = ttk.Treeview(self.medicos_ventana, columns=columnas, show="headings")
+        
+        tree.heading("item_nombre", text="Nombre")
+        tree.heading("item_esp", text="Especialidad")
+        tree.heading("item_dias", text="Días de atención")
+        tree.heading("item_horarios", text="Horarios")
+        
+        tree.column("item_nombre", width=80)
+        tree.column("item_esp", width=80)
+        tree.column("item_dias", width=80)
+        tree.column("item_horarios", width=80)
+        
+        # Llenar la lista
+        for medico in self.paciente.retornar_medicos():
+            nombre_med = medico.get_nombre()
+            esp_med = medico.get_especialidad()
+            dias_med = medico.get_dias_atencion()
+            horarios_med = []
+            for horario in medico.get_horarios():
+                horario_convertido = (decimal_a_tiempo(horario[0]), decimal_a_tiempo(horario[1]))
+                horarios_med.append(horario_convertido)
+            
+            tree.insert("", tk.END, values=(nombre_med, esp_med, dias_med, horarios_med))
+            
+        # Estilo (falta)
+        
+        tree.pack(pady=20, padx=20, fill=tk.BOTH, expand=True)
+        
+        # Agregar al notebook
+        self.notebook.add(self.medicos_ventana, text="Lista de médicos")
+        self.notebook.select(self.medicos_ventana)
+        
+    
     def solicitar_turno(self):
         pass
 
@@ -344,6 +397,6 @@ if __name__ == "__main__":
     main = Main()
     main.cargar_medicos()
     principal = tk.Tk()
-    principal.geometry("650x450")
+    principal.geometry("800x700")
     app = Interfaz(principal) 
     principal.mainloop() 
