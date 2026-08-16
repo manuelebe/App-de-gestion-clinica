@@ -338,7 +338,64 @@ class Interfaz:
     def disponibilidad_medicos(self): 
         pass 
     def solicitar_turno(self):
-        pass
+        vent_solic_turn = tk.Toplevel(self.principal)
+        vent_solic_turn.title("Solicitar Turno")
+        vent_solic_turn.geometry("600x500")
+        vent_solic_turn.resizable(False, False)
+
+        tk.Label(vent_solic_turn, text="Seleccione un médico:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        lista = tk.Listbox(vent_solic_turn, height=10, width=70)
+        lista.grid(row=1, column=0, padx=10, pady=5)
+
+        for a in medic_database:
+            lista.insert(tk.END, f"{a['Nombre']} - {a['Especialidad']}")
+
+        tk.Label(vent_solic_turn, text="Ingrese su nombre:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        entry_nombre = tk.Entry(vent_solic_turn, width=40)
+        entry_nombre.grid(row=3, column=0, padx=10, pady=5)
+
+        tk.Label(vent_solic_turn, text="Día solicitado:").grid(row=4, column=0, padx=10, pady=5, sticky="w")
+        entry_dia = tk.Entry(vent_solic_turn, width=40)
+        entry_dia.grid(row=5, column=0, padx=10, pady=5)
+
+        tk.Label(vent_solic_turn, text="Horario solicitado (ej: 10):").grid(row=6, column=0, padx=10, pady=5, sticky="w")
+        entry_horario = tk.Entry(vent_solic_turn, width=40)
+        entry_horario.grid(row=7, column=0, padx=10, pady=5)
+
+        def confirmar_turno():
+            seleccion = lista.curselection()
+            if not seleccion:
+                messagebox.showwarning("Atención", "Seleccione un médico primero")
+                return
+
+            medico = medic_database[seleccion[0]]
+            nombre_paciente = entry_nombre.get().strip()
+            dia = entry_dia.get().strip()
+            horario = entry_horario.get().strip()
+
+            if not nombre_paciente or not dia or not horario:
+                messagebox.showwarning("Atención", "Complete todos los campos")
+                return
+
+            # Validación simple de disponibilidad
+            if dia in medico["Dias"]:
+                    if any(hora[0] <= int(horario) <= hora[1] for hora in medico["Horarios"]):
+                        messagebox.showinfo("Éxito", f"Turno reservado con {medico['Nombre']} el {dia} a las {horario} hs")
+                        vent_solic_turn.destroy()
+                    else: 
+                        messagebox.showerror("Error", "El médico no está disponible en ese horario")
+            else:
+                messagebox.showerror("Error", "El médico no está disponible en ese día")
+
+        # Botón Confirmar
+        btn_confirmar = tk.Button(vent_solic_turn, text="Confirmar Turno", width=20, bg="#00A86B", fg="white", font=("Segoe UI", 10, "bold"), 
+                          relief="flat", command=confirmar_turno)
+        btn_confirmar.grid(row=8, column=0, pady=10)
+
+        # Botón Cancelar
+        btn_cerrar = tk.Button(vent_solic_turn, text="Cancelar",  bg="#BE0606", fg="white", font=("Segoe UI", 10, "bold"), 
+                          relief="flat", command=vent_solic_turn.destroy)
+        btn_cerrar.grid(row=9, column=0, pady=5) 
 
 if __name__ == "__main__":
     main = Main()
