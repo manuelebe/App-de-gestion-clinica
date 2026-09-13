@@ -1,7 +1,5 @@
 #App de gestión con interfaz hecha en TKinter o en alguna otra biblioteca
 from database import user_database, admin_database, medic_database
-import getpass
-from datetime import date
 
 class Main:
     def __init__(self):
@@ -172,11 +170,5 @@ class Turno:
     def set_horario(self, nuevo_hor):
         self.__horario = nuevo_hor
 
-# Convertir decimales a tiempo (19.50 a 19:30)
-def decimal_a_tiempo(horas_decimal):
-    horas = int(horas_decimal)
-    minutos = int(round((horas_decimal - horas) * 60))
-    return horas, minutos
-    
 main = Main()
 #main.cargar_medicos()

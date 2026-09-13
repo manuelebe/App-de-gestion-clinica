@@ -37,28 +37,28 @@ medic_database = [
     {
         "Nombre": "Elena Rostova",
         "Especialidad": "Pediatría clínico",
-        "Dias": ["Monday", "Wednesday", "Friday"],
-        "Horarios": [(8, 13)]
+        "Dias": ["Lunes", "Miercoles", "Viernes"],
+        "Horarios": [((8, 0), (13, 0))]
     }, {
         "Nombre": "Carlos Mendoza",
         "Especialidad": "Cardiología adultos",
-        "Dias": ["Tuesday", "Thursday"],
-        "Horarios": [(14, 19.50)]
+        "Dias": ["Martes", "Jueves"],
+        "Horarios": [((14, 0), (19, 30))]
     }, {
         "Nombre": "Amira Said",
         "Especialidad": "Dermatología médica y estética",
-        "Dias": ["Monday", "Thursday"],
-        "Horarios": [(10, 16)]
+        "Dias": ["Lunes", "Jueves"],
+        "Horarios": [((10, 0), (16, 0))]
     }, {
         "Nombre": "Mateo Silva",
         "Especialidad": "Traumatología y ortopedia",
-        "Dias": ["Wednesday", "Friday"],
-        "Horarios": [(15, 20)]
+        "Dias": ["Miercoles", "Viernes"],
+        "Horarios": [((15, 0), (20, 0))]
     }, {
         "Nombre": "Sofía Chevalier",
         "Especialidad": "Ginecología y obstetricia",
-        "Dias": ["Tuesday", "Friday"],
-        "Horarios": [(9, 14.50)]
+        "Dias": ["Martes", "Viernes"],
+        "Horarios": [((9, 0), (14, 30))]
     }
 ]
 

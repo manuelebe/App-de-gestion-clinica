@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-from main import Usuario, Paciente, Administrador, Main, decimal_a_tiempo
+from main import Usuario, Paciente, Administrador, Main
+import calendar
+from datetime import datetime
 
 class Interfaz:
     def __init__(self, principal):
@@ -336,6 +338,7 @@ class Interfaz:
         pass
 
     def disponibilidad_medicos(self): 
+        #Faltaria darle mas estilo y hacer q se vea su disponibilidad mas claramente
         if self.medicos_ventana is not None:
             messagebox.showwarning("Aviso", "Ya existe la pestaña de Médicos. Ciérrala primero.")
             return
@@ -375,11 +378,22 @@ class Interfaz:
             esp_med = medico.get_especialidad()
             dias_med = medico.get_dias_atencion()
             horarios_med = []
-            for horario in medico.get_horarios():
-                horario_convertido = (decimal_a_tiempo(horario[0]), decimal_a_tiempo(horario[1]))
-                horarios_med.append(horario_convertido)
+            for horarios in medico.get_horarios():
+                horario_texto = []
+                for horario in horarios:
+                    horas = horario[0]
+                    minutos = horario[1]
+                    if horas < 10:
+                        horas = f"0{horas}"
+                    if minutos < 10:
+                        minutos = f"0{minutos}"
+                    horario_texto.append(f"{horas}:{minutos}")
+                horario_texto_unido = ", ".join(horario_texto)
+                horarios_med.append(horario_texto_unido)
+                
+            horarios_med_unido = " - ".join(horarios_med)
             
-            tree.insert("", tk.END, values=(nombre_med, esp_med, dias_med, horarios_med))
+            tree.insert("", tk.END, values=(nombre_med, esp_med, dias_med, horarios_med_unido))
             
         # Estilo (falta)
         
@@ -391,7 +405,163 @@ class Interfaz:
         
     
     def solicitar_turno(self):
-        pass
+        vent_solic_turn = tk.Toplevel(self.principal)
+        vent_solic_turn.title("Solicitar Turno")
+        vent_solic_turn.geometry("325x600")
+        vent_solic_turn.resizable(False, False)
+        
+        # Fecha actual
+        now = datetime.now()
+
+        # Entrys
+        tk.Label(vent_solic_turn, text="Seleccione un médico:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        lista = tk.Listbox(vent_solic_turn, height=10, width=50)
+        lista.grid(row=1, column=0, padx=10, pady=5)
+
+        for medico in self.paciente.retornar_medicos():
+            lista.insert(tk.END, f"{medico.get_nombre()} - {medico.get_especialidad()}")
+
+        tk.Label(vent_solic_turn, text="Ingrese su nombre:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        entry_nombre = tk.Entry(vent_solic_turn, width=40)
+        entry_nombre.grid(row=3, column=0, padx=10, pady=5)
+        
+        # Dropdowns de fecha y hora
+        
+        def actualizar_dias():
+            # Ahora mismo los turnos no se guardan en ningun lado, falta guardarlos, poder verlos y no dejar que registren 2 turnos en el mismo dia y horario
+            
+            # Ajusta los dias mostrados segun el mes y año
+            anio = int(self.anio_cb.get())
+            mes = int(self.mes_cb.get())
+        
+            # calendar.monthrange retorna(primer dia de la semana, numero de dias en mes)
+            _, num_dias = calendar.monthrange(anio, mes)
+        
+            # guardar seleccion previa si es valida
+            dia_anterior = self.dia_cb.get()
+        
+            # actualizar dropdown dias
+            lista_dias = [f"{d:02d}" for d in range(1, num_dias + 1)]
+            self.dia_cb["values"] = lista_dias
+        
+            # si el dia previo no es valido, resetear al primero
+            if dia_anterior in lista_dias:
+                self.dia_cb.set(dia_anterior)
+            else:
+                self.dia_cb.set("01")
+        
+        # Año
+        ttk.Label(vent_solic_turn, text="Año: ").grid(
+            row = 4, column = 0, sticky = "w", padx = 10, pady = 5
+        )
+        self.anio_cb = ttk.Combobox(
+            vent_solic_turn,
+            values = [str(y) for y in range(now.year - 5, now.year + 10)],
+            width = 6,
+            state = "readonly",
+        )
+        self.anio_cb.set(str(now.year))
+        self.anio_cb.grid(row = 5, column = 0, padx = 10, pady = 5)
+        self.anio_cb.bind("<<ComboboxSelected>>", actualizar_dias)
+        
+        # Mes
+        ttk.Label(vent_solic_turn, text="Mes:").grid(
+            row=6, column=0, sticky="w", padx=10, pady=5
+        )
+        self.mes_cb = ttk.Combobox(
+            vent_solic_turn,
+            values=[f"{m:02d}" for m in range(1, 13)],
+            width=4,
+            state="readonly",
+        )
+        self.mes_cb.set(f"{now.month:02d}")
+        self.mes_cb.grid(row=7, column=0, padx=10, pady=5)
+        self.mes_cb.bind("<<ComboboxSelected>>", actualizar_dias)
+        
+        # Dia
+        ttk.Label(vent_solic_turn, text="Dia:").grid(
+            row=8, column=0, sticky="w", padx=10, pady=5
+        )
+        self.dia_cb = ttk.Combobox(vent_solic_turn, width=4, state="readonly")
+        self.dia_cb.grid(row=9, column=0, padx=10, pady=5)
+
+        # Hora
+        ttk.Label(vent_solic_turn, text="Hora:").grid(
+            row=10, column=0, sticky="w", padx=10, pady=5
+        )
+        self.hora_cb = ttk.Combobox(
+            vent_solic_turn,
+            values=[f"{h:02d}:00" for h in range(24)],
+            width=6,
+            state="readonly",
+        )
+        self.hora_cb.set(f"{now.hour:02d}:00")
+        self.hora_cb.grid(row=11, column=0, padx=10, pady=5)
+        
+        # Llena el dropdown de dias
+        actualizar_dias()
+        self.dia_cb.set(f"{now.day:02d}")
+        
+        def confirmar_turno():
+            seleccion = lista.curselection()
+            if not seleccion:
+                messagebox.showwarning("Atención", "Seleccione un médico primero")
+                return
+            
+            def turno_registrado_con_exito():
+                messagebox.showinfo("Éxito", f"Turno reservado con {medico['Nombre']} el {dia} a las {hora} hs")
+                vent_solic_turn.destroy()
+            
+            medico = self.paciente.retornar_medicos()[seleccion[0]]
+            nombre_paciente = entry_nombre.get().strip()
+            anio = int(self.anio_cb.get())
+            mes = int(self.mes_cb.get())
+            dia = int(self.dia_cb.get())
+            hora = self.hora_cb.get().split(":")
+            print(hora)
+            fecha = datetime(anio, mes, dia)
+            dia_indice = fecha.weekday()
+            
+            # Convierte el indice de dia de semana a español
+            dias_esp = [
+                "Lunes",
+                "Martes",
+                "Miercoles",
+                "Jueves",
+                "Viernes",
+                "Sabado",
+                "Domingo",
+            ]
+            dia_actual = dias_esp[dia_indice]
+
+            if not nombre_paciente or not anio or not mes or not dia or not hora:
+                messagebox.showwarning("Atención", "Complete todos los campos")
+                return
+
+            # Validación de disponibilidad
+            if dia_actual in medico.get_dias_atencion():
+                for horario_med in medico.get_horarios():
+                    if hora[0] > horario_med[0]:
+                        turno_registrado_con_exito()
+                    elif hora[0] == horario_med[0]:
+                        if hora[1] >= horario_med[1]:
+                            turno_registrado_con_exito()
+                        else:
+                            messagebox.showerror("Error", "El médico no está disponible en ese horario")
+                    else:
+                        messagebox.showerror("Error", "El médico no está disponible en ese horario")
+            else:
+                messagebox.showerror("Error", "El médico no está disponible en ese día")
+
+        # Botón Confirmar
+        btn_confirmar = tk.Button(vent_solic_turn, text="Confirmar Turno", width=20, bg="#00A86B", fg="white", font=("Segoe UI", 10, "bold"), 
+            relief="flat", command=confirmar_turno)
+        btn_confirmar.grid(row=12, column=0, pady=10)
+
+        # Botón Cancelar
+        btn_cerrar = tk.Button(vent_solic_turn, text="Cancelar",  bg="#BE0606", fg="white", font=("Segoe UI", 10, "bold"), 
+            relief="flat", command=vent_solic_turn.destroy)
+        btn_cerrar.grid(row=13, column=0, pady=5) 
 
 if __name__ == "__main__":
     main = Main()
