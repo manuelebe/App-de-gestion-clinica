@@ -1,68 +1,50 @@
-# Lista de usuarios (pacientes)
-user_database = {
-    "juanperez": "jp123",
-    "mariagomez": "mg234",
-    "carloslopez": "cl345",
-    "lauradiaz": "ld456",
-    "fernandoramos": "fr567",
-    "sofiatorres": "st678",
-    "martinrodriguez": "mr789",
-    "paulaarias": "pa890",
-    "diegofernandez": "df901",
-    "valentinacruz": "vc012",
-    "camilaibanez": "ci123",
-    "lucasbenitez": "lb234",
-    "florenciacosta": "fc345",
-    "sebastianmora": "sm456",
-    "andrearuiz": "ar567",
-    "gustavocoria": "gc678",
-    "nataliasosa": "ns789",
-    "ricardosilva": "rs890",
-    "veronicamendez": "vm901",
-    "alejandromartinez": "am012",
-}
+import os # Sirve para interactuar con el sistema operativo, manejar archivos y capartes, crear, borrar, etc
+import pickle # Guardar objetos en un archivo binario y recuperarlos después en el mismo estado.
+import hashlib #Sirve para encriptar la informacion 
 
-# Lista de administradores
-admin_database = {
-    "admin_jose": "aj123",
-    "admin_marta": "am234",
-    "admin_carlos": "ac345",
-    "admin_laura": "al456",
-    "admin_fernando": "af567",
-    "admin_sofia":"as678",
-}
+USUARIOS_FILE = "usuarios.dat"
+MEDICOS_FILE = "medicos.dat"
+TURNOS_FILE = "turnos.dat"
 
-# Lista de médicos
-medic_database = [
-    {
-        "Nombre": "Elena Rostova",
-        "Especialidad": "Pediatría clínico",
-        "Dias": ["Lunes", "Miercoles", "Viernes"],
-        "Horarios": [((8, 0), (13, 0))]
-    }, {
-        "Nombre": "Carlos Mendoza",
-        "Especialidad": "Cardiología adultos",
-        "Dias": ["Martes", "Jueves"],
-        "Horarios": [((14, 0), (19, 30))]
-    }, {
-        "Nombre": "Amira Said",
-        "Especialidad": "Dermatología médica y estética",
-        "Dias": ["Lunes", "Jueves"],
-        "Horarios": [((10, 0), (16, 0))]
-    }, {
-        "Nombre": "Mateo Silva",
-        "Especialidad": "Traumatología y ortopedia",
-        "Dias": ["Miercoles", "Viernes"],
-        "Horarios": [((15, 0), (20, 0))]
-    }, {
-        "Nombre": "Sofía Chevalier",
-        "Especialidad": "Ginecología y obstetricia",
-        "Dias": ["Martes", "Viernes"],
-        "Horarios": [((9, 0), (14, 30))]
-    }
-]
+def encriptar_contraseña(ctrñ: str) -> str:
+    return hashlib.sha256(ctrñ.encode('utf-8')).hexdigest()
 
-# Lista de turnos
-turn_database = [
-    
-]
+def verificar_contraseña(ctrñ: str, stored_hash_str: str) -> bool:
+    return encriptar_contraseña(ctrñ) == stored_hash_str
+
+def cargar_datos_binarios(arch):
+    if not os.path.exists(arch):
+        return []
+    try:
+        with open(arch, "rb") as f:
+            return pickle.load(f)
+    except (EOFError, pickle.UnpicklingError):
+        return []
+
+def guardar_datos_binarios(arch, datos):
+    with open(arch, "wb") as f:
+        pickle.dump(datos, f)
+
+def cargar_datos():
+    # Inicializar archivo de usuarios si no existe
+    if not os.path.exists(USUARIOS_FILE):
+        usuarios_iniciales = [
+            {"id": 1, "usuario": "admin1", "contraseña": encriptar_contraseña("12345"), "rol": "Admin"},
+            {"id": 2, "usuario": "paciente1", "contraseña": encriptar_contraseña("12345"), "rol": "Usuario"},
+            {"id": 3, "usuario": "paciente2", "contraseña": encriptar_contraseña("12345"), "rol": "Usuario"},
+            {"id": 4, "usuario": "paciente3", "contraseña": encriptar_contraseña("12345"), "rol": "Usuario"},
+        ]
+        guardar_datos_binarios(USUARIOS_FILE, usuarios_iniciales)
+
+    # Inicializar archivo de médicos si no existe
+    if not os.path.exists(MEDICOS_FILE):
+        medicos_iniciales = [
+            {"id": 1, "nombre": "Agustin", "especialidad": "Traumatologo", "dias": "Martes, Jueves", "horarios": "12-16"},
+            {"id": 2, "nombre": "Maria Lopez", "especialidad": "Cardiologia", "dias": "Lunes, Miercoles", "horarios": "09-13"},
+            {"id": 3, "nombre": "Carlos Gomez", "especialidad": "Pediatria", "dias": "Viernes", "horarios": "08-12"}
+        ]
+        guardar_datos_binarios(MEDICOS_FILE, medicos_iniciales)
+
+    # Inicializar archivo de turnos si no existe
+    if not os.path.exists(TURNOS_FILE):
+        guardar_datos_binarios(TURNOS_FILE, [])
