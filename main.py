@@ -1,174 +1,223 @@
-#App de gestión con interfaz hecha en TKinter o en alguna otra biblioteca
-from database import user_database, admin_database, medic_database
+#App de gestión con interfaz hecha en TKinter o en alguna otra biblioteca 
+from datetime import datetime, date, timedelta
+from database import (
+    cargar_datos, cargar_datos_binarios, guardar_datos_binarios,
+    encriptar_contraseña, verificar_contraseña,
+    USUARIOS_FILE, MEDICOS_FILE, TURNOS_FILE
+)
 
 class Main:
     def __init__(self):
-        pass
-    
-    # Carga como instancias de la clase Medico a los datos precargados en database
-    def cargar_medicos(self):
-        global medic_database
-        
-        if medic_database and isinstance(medic_database[0], Medico):
-            return
-        
-        medic_database = [
-            Medico(
-                i["Nombre"],
-                i["Especialidad"],
-                i["Dias"],
-                i["Horarios"]
-            )
-            for i in medic_database
-        ]
-        print(medic_database)
-        
+        cargar_datos() # Se precargan datos como usuarios, administradors y medicos
+
 #Clase Usuario
 class Usuario:
-    def __init__(self):
-        pass
-    
-    def registrar(self, usuario, contraseña):
+    def registrar(self, usuario, contraseña, rol="Usuario"):
+        cargar_datos()
         if len(usuario) < 6:
             raise Exception("El nombre de usuario debe contener al menos 6 carácteres.")
         if len(contraseña) < 5:
             raise Exception("La contraseña debe contener al menos 5 carácteres.")
-        if usuario in user_database or usuario in admin_database:
-            raise Exception("El usuario ya existe.")
-        user_database[usuario] = contraseña
-        return ("Usuario registrado correctamente.")
         
+        usuarios = cargar_datos_binarios(USUARIOS_FILE)
+        for u in usuarios:
+            if u["usuario"].lower() == usuario.lower():
+                raise Exception("El nombre de usuario ya se encuentra registrado.")
+
+        # Autoincrementar ID para el nuevo registro
+        nuevo_id = max([u["id"] for u in usuarios], default=0) + 1
+        nuevo_usuario = {
+            "id": nuevo_id,
+            "usuario": usuario,
+            "contraseña": encriptar_contraseña(contraseña),
+            "rol": rol
+        }
+        usuarios.append(nuevo_usuario)
+        guardar_datos_binarios(USUARIOS_FILE, usuarios)
+        return "Usuario registrado correctamente."
+
     def login(self, usuario, contraseña):
-        if usuario in user_database:
-            if user_database[usuario] == contraseña:
-                return ("Usuario", usuario) 
-        elif usuario in admin_database:
-            if admin_database[usuario] == contraseña:
-                return ("Admin", usuario) 
-        raise Exception("El usuario o la contraseña son incorrectos.")
-        
+        cargar_datos()
+        usuarios = cargar_datos_binarios(USUARIOS_FILE)
+        for u in usuarios:
+            if u["usuario"] == usuario and verificar_contraseña(contraseña, u["contraseña"]):
+                return u["rol"], u["usuario"]
+        raise Exception("Usuario o contraseña incorrectos.")
 
 #Clase Administrador
 class Administrador:
-    def __init__(self):
-        pass
-    
+    def obtener_medicos(self):
+        medicos = cargar_datos_binarios(MEDICOS_FILE)
+
+        # Formato de tupla: (id, nombre, especialidad, dias, horarios)
+        return [(m["id"], m["nombre"], m["especialidad"], m["dias"], m["horarios"]) for m in medicos]
+
     def añadir_medico(self, nombre, esp, dias, hor):
-        medic_database.append(Medico(nombre, esp, dias, hor))
-        
-    def buscar_medico(self, nombre):
-        contador = 0
-        #for i in medic_database:
-            #if i.get_nombre() == nombre:
-                #return contador
-            #else:
-                #contador += 1
-    
-    def modificar_medico(self, indice_medico, nombre, esp, dias, hor):
-        medic_database[indice_medico].set_nombre(nombre)
-        medic_database[indice_medico].set_especialidad(esp)
-        medic_database[indice_medico].set_dias_atencion(dias)
-        medic_database[indice_medico].set_horarios(hor)
-    
-    def eliminar_medico(self, indice_medico):
-        medic_database.pop(indice_medico)
-    
+        medicos = cargar_datos_binarios(MEDICOS_FILE)
+        for m in medicos:
+            if m["nombre"].lower() == nombre.strip().lower() and m["especialidad"].lower() == esp.strip().lower():
+                raise Exception("El médico ya se encuentra registrado con esa especialidad.")
+
+        nuevo_id = max([m["id"] for m in medicos], default=0) + 1
+        nuevo_medico = {
+            "id": nuevo_id,
+            "nombre": nombre.strip(),
+            "especialidad": esp.strip(),
+            "dias": dias.strip(),
+            "horarios": hor.strip()
+        }
+        medicos.append(nuevo_medico)
+        guardar_datos_binarios(MEDICOS_FILE, medicos)
+
+    def modificar_medico(self, id_medico, nombre, esp, dias, hor):
+        medicos = cargar_datos_binarios(MEDICOS_FILE)
+        encontrado = False
+        for m in medicos:
+            if str(m["id"]) == str(id_medico):
+                m["nombre"] = nombre.strip()
+                m["especialidad"] = esp.strip()
+                m["dias"] = dias.strip()
+                m["horarios"] = hor.strip()
+                encontrado = True
+                break
+        if encontrado:
+            guardar_datos_binarios(MEDICOS_FILE, medicos)
+
+    def eliminar_medico(self, id_medico):
+        medicos = cargar_datos_binarios(MEDICOS_FILE)
+        medicos = [m for m in medicos if str(m["id"]) != str(id_medico)] #Se obtienen todos lo medicos que no coincida con ese id_medico
+        guardar_datos_binarios(MEDICOS_FILE, medicos)
+
 #Clase Paciente
 class Paciente:
-    def __init__(self):
-        pass
-    
-    def buscar_medico(self, esp):
-        medicos_encontrados = []
-        for i in medic_database:
-            if i.get_especialidad() == esp:
-                medicos_encontrados.append(i)
-        return medicos_encontrados
-    
-    def retornar_medicos(self):
-        medicos = []
-        for medico in medic_database:
-            medicos.append(medico)
-        return medicos
-    
-    def ver_disponibilidad(self, medico):
-        return medico.get_dias_atencion(), medico.get_horarios()
-    
-    def solicitar_turno(self, medico, fecha, horario):
-        dia = fecha.strftime("%A")
-        if dia in medico.get_dias_atencion():
-            for i in medico.get_horarios():
-                rango = i
-                if rango[0] <= horario <= rango[1]:
-                    return Turno(self, medico, fecha, horario)
-            raise Exception("Horario no disponible")
-        else:
-            raise Exception("Este día no esta disponible.")
-        # Chequear si ya existe un turno con este horario y fecha.
-        
-#Clase Médico
-class Medico:
-    def __init__(self, nombre, especialidad, dias_atencion, horarios):
-        self.__nombre = nombre
-        self.__especialidad = especialidad
-        self.__dias_atencion = dias_atencion
-        self.__horarios = horarios
-        
-    def get_nombre(self):
-        return self.__nombre
-    
-    def get_especialidad(self):
-        return self.__especialidad
-    
-    def get_dias_atencion(self):
-        return self.__dias_atencion
-    
-    def get_horarios(self):
-        return self.__horarios
-    
-    def set_nombre(self, nuevo_nombre):
-        self.__nombre = nuevo_nombre
-    
-    def set_especialidad(self, nueva_esp):
-        self.__especialidad = nueva_esp
-    
-    def set_dias_atencion(self, nuevo_dias):
-        self.__dias_atencion = nuevo_dias
-    
-    def set_horarios(self, nuevo_hor):
-        self.__horarios = nuevo_hor
-    
-#Clase Turno
-class Turno:
-    def __init__(self, paciente, medico, fecha, horario):
-        self.__paciente = paciente
-        self.__medico = medico
-        self.__fecha = fecha
-        self.__horario = horario
-    
-    def get_paciente(self):
-        return self.__paciente
-    
-    def get_medico(self):
-        return self.__medico
-    
-    def get_fecha(self):
-        return self.__fecha
-    
-    def get_horario(self):
-        return self.__horario
-    
-    def set_paciente(self, nuevo_pac):
-        self.__paciente = nuevo_pac
-    
-    def set_medico(self, nuevo_med):
-        self.__medico = nuevo_med
-    
-    def set_fecha(self, nueva_fecha):
-        self.__fecha = nueva_fecha
-    
-    def set_horario(self, nuevo_hor):
-        self.__horario = nuevo_hor
+    def solicitar_turno(self, paciente_username, medico_id, fecha_str, hora_str):
+        if not fecha_str or not hora_str:
+            raise Exception("Debe ingresar la fecha y la hora del turno.")
 
-main = Main()
-#main.cargar_medicos()
+        # Validar fecha
+        try:
+            fecha_d = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+        except ValueError:
+            raise Exception("Formato de fecha inválido. Use AAAA-MM-DD.")
+
+        if fecha_d < date.today():
+            raise Exception("No puede solicitar un turno para una fecha pasada.")
+
+        # Validar que la hora esté en los horarios disponibles
+        horarios_disponibles = self.obtener_horarios_disponibles(medico_id, fecha_str)
+        if hora_str not in horarios_disponibles:
+            raise Exception("La hora seleccionada no está disponible para ese médico en esa fecha.")
+
+        # Verificar si el paciente ya tiene turno en esa hora
+        turnos = cargar_datos_binarios(TURNOS_FILE)
+        for t in turnos:
+            if t["paciente"] == paciente_username and t["fecha"] == fecha_str and t["hora"] == hora_str:
+                raise Exception("Ya tienes otro turno registrado a esta misma hora.")
+
+        # Crear nuevo turno
+        nuevo_id = max([t["id"] for t in turnos], default=0) + 1
+        nuevo_turno = {
+            "id": nuevo_id,
+            "paciente": paciente_username,
+            "medico_id": int(medico_id),
+            "fecha": fecha_str,
+            "hora": hora_str
+        }
+        turnos.append(nuevo_turno)
+        guardar_datos_binarios(TURNOS_FILE, turnos)
+        return "Turno reservado exitosamente."
+
+
+    def limpiar_turnos_vencidos(self):
+        hoy_str = date.today().strftime("%Y-%m-%d")
+        turnos = cargar_datos_binarios(TURNOS_FILE)
+        turnos_validos = [t for t in turnos if t["fecha"] >= hoy_str]
+        guardar_datos_binarios(TURNOS_FILE, turnos_validos)
+
+    def obtener_turnos_paciente(self, paciente_username):
+        self.limpiar_turnos_vencidos()
+        turnos = cargar_datos_binarios(TURNOS_FILE)
+        medicos = cargar_datos_binarios(MEDICOS_FILE)
+        medicos_dict = {m["id"]: m for m in medicos} #Se crear un dict dentro de otro dict, donde la clave es el id
+
+        resultado = []
+        for t in turnos:
+            if t["paciente"] == paciente_username:
+                medicos = medicos_dict.get(t["medico_id"], {"nombre": "Desconocido", "especialidad": "N/A"})
+                resultado.append((t["id"], medicos["nombre"], medicos["especialidad"], t["fecha"], t["hora"]))
+
+        # Ordenar por fecha y hora
+        resultado.sort(key=lambda x: (x[3], x[4]))
+        return resultado
+
+    def cancelar_turno(self, turno_id, paciente_username):
+        turnos = cargar_datos_binarios(TURNOS_FILE)
+        turnos_filtrados = [t for t in turnos if not (str(t["id"]) == str(turno_id) and t["paciente"] == paciente_username)]
+
+        if len(turnos) == len(turnos_filtrados):
+            raise Exception("No se pudo cancelar el turno o el turno no te pertenece.")
+
+        guardar_datos_binarios(TURNOS_FILE, turnos_filtrados)
+        return "Turno cancelado con éxito."
+
+    def obtener_horarios_disponibles(self, medico_id, fecha_str):
+        self.limpiar_turnos_vencidos()
+
+        #Si no ingresa fecha devulve una lista vacia
+        if not fecha_str:
+            return []
+
+        # convierte la fecha a tipo date
+        try:
+            fecha_d = datetime.strptime(fecha_str, "%Y-%m-%d").date()
+        except ValueError:
+            return []
+
+        # Verifica que no ingrese fechas antiguas
+        if fecha_d < date.today():
+            return []
+
+        medicos = cargar_datos_binarios(MEDICOS_FILE)
+        medico = next((m for m in medicos if str(m["id"]) == str(medico_id)), None) # El next delvuelve el proximo objeto de la lista que cumpla con la  condicion y ,None es el valor por defecto que se le da a la variable en caso de que no se encunetre ningun medico con ese ID
+        if not medico:
+            return []
+
+        dias_atencion, rango_horario = medico["dias"].lower(), medico["horarios"]
+
+        dias_map = {
+            'monday': 'lunes', 'tuesday': 'martes', 'wednesday': 'miercoles',
+            'thursday': 'jueves', 'friday': 'viernes', 'saturday': 'sabado', 'sunday': 'domingo'
+        }
+        dia_ingresado = dias_map[fecha_d.strftime('%A').lower()]
+        dias_atencion_clean = dias_atencion.replace('é', 'e').replace('á', 'a').replace('í', 'i')
+        
+        if dia_ingresado not in dias_atencion_clean:
+            return []
+
+        # Es la funcion encargada de realizar los intervalos de 30 minutos y mostrar los horarios disponibles
+        horarios_posibles = []
+        try:
+            inicio_str, fin_str = rango_horario.split('-')
+            hora_inicio = int(inicio_str.strip())
+            hora_fin = int(fin_str.strip())
+
+            actual = datetime.combine(fecha_d, datetime.min.time()).replace(hour=hora_inicio)
+            limite = datetime.combine(fecha_d, datetime.min.time()).replace(hour=hora_fin)
+
+            while actual < limite:
+                horarios_posibles.append(actual.strftime("%H:%M"))
+                actual += timedelta(minutes=30)
+        except ValueError:
+            return []
+
+        #Funcion encragada de cargar los tunros ya reservados para un medico en especifico en una fecha
+        turnos = cargar_datos_binarios(TURNOS_FILE)
+        ocupados = []
+        for t in turnos:
+            if str(t["medico_id"]) == str(medico_id) and t["fecha"] == fecha_str:
+                hora_str = t["hora"].strip()
+                if len(hora_str) == 4 and hora_str[1] == ':':
+                    hora_str = "0" + hora_str #Setea el formato en tipo horario 9:00, lo pasa a 09:00
+                ocupados.append(hora_str)
+
+        return [h for h in horarios_posibles if h not in ocupados]
